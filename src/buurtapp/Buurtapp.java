@@ -4,6 +4,8 @@
  */
 package buurtapp;
 
+import DAO.MeldingDAO;
+import Domein.Melding;
 import java.util.List;
 
 /**
