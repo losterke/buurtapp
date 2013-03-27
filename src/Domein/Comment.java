@@ -4,6 +4,8 @@
  */
 package Domein;
 
+import DAO.UserDAO;
+
 /**
  *
  * @author tim
@@ -13,6 +15,13 @@ public class Comment {
     private int id;
     private String inhoud;
     private User auteur;
+    private UserDAO udao = UserDAO.getInstance();
+    
+    public Comment(int i, String in, int a) {
+        setId(i);
+        setInhoud(in);
+        setAuteur(udao.getUser(a));
+    }
 
     public int getId() {
         return id;

@@ -14,8 +14,17 @@ public class User {
     private String naam;
     private String voornaam;
     private String adres;
-    private Byte[] foto;
+    private byte[] foto;
     private int punten;
+
+    public User(int i, String n, String vn, String a, byte[] f, int ptn) {
+        setId(i);
+        setNaam(n);
+        setVoornaam(vn);
+        setAdres(a);
+        setFoto(f);
+        setPunten(ptn);
+    }
 
     public int getId() {
         return id;
@@ -49,11 +58,11 @@ public class User {
         this.adres = adres;
     }
 
-    public Byte[] getFoto() {
+    public byte[] getFoto() {
         return foto;
     }
 
-    public void setFoto(Byte[] foto) {
+    public void setFoto(byte[] foto) {
         this.foto = foto;
     }
 

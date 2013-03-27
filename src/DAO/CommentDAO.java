@@ -4,7 +4,7 @@
  */
 package DAO;
 
-import Domein.Melding;
+import Domein.Comment;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -28,12 +28,12 @@ public class CommentDAO {
         return instance;
     }
         
-    public boolean addMelding(Melding m){
+    public boolean addComment(Comment c){
         try (Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
-            PreparedStatement stat = conn.prepareStatement("INSERT INTO Melding VALUES (?,?,?)");
-            stat.setInt(1, m.getId());
-            stat.setString(2, m.getType());
-            stat.setString(3, m.getBeschrijving());
+            PreparedStatement stat = conn.prepareStatement("INSERT INTO Comment VALUES (?,?,?)");
+            stat.setInt(1, c.getId());
+            stat.setString(2, c.getInhoud());
+            stat.setInt(3, c.getAuteur().getId());
             stat.executeUpdate();
             return true;
         }catch (SQLException ex){
@@ -45,27 +45,27 @@ public class CommentDAO {
         
     }
     
-    public boolean addMeldingen(Melding... meldingen) {
+    public boolean addComments(Comment... comments) {
         boolean success = true;
-        for (Melding m : meldingen) {
-            success = success && addMelding(m);
+        for (Comment c : comments) {
+            success = success && addComment(c);
         }
         return success;
     }
     
-    public Melding getMelding(int id){
-        Melding m = null;
+    public Comment getComment(int id){
+        Comment c = null;
         
         try (Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
-            PreparedStatement stat = conn.prepareStatement("SELECT FROM Melding WHERE ID = ?");
+            PreparedStatement stat = conn.prepareStatement("SELECT FROM Comment WHERE ID = ?");
             stat.setInt(1, id);
             try (ResultSet rs = stat.executeQuery()) {
                 if (rs.next()) {
                     int i = rs.getInt("ID");
-                    String t = rs.getString("Type");
-                    String b = rs.getString("Beschrijving");
+                    String in = rs.getString("Inhoud");
+                    int a = rs.getInt("Auteur");
                                         
-                    m =  new Melding(i,t,b);
+                    c =  new Comment(i,in,a);
                 }
             }
             
@@ -74,35 +74,35 @@ public class CommentDAO {
                 t.printStackTrace();
             } 
         }
-        return m;
+        return c;
     }
     
-    public List<Melding> getMeldingen(int... ids) {
-        List<Melding> meldingen = new ArrayList<>();
+    public List<Comment> getComments(int... ids) {
+        List<Comment> comments = new ArrayList<>();
         
         for (int id : ids) {
-            Melding m = getMelding(id);
-            if (m != null) {
-                meldingen.add(m);
+            Comment c = getComment(id);
+            if (c != null) {
+                comments.add(c);
             }
         }
         
-        return meldingen;
+        return comments;
     }
     
-     public List<Melding> getAllMeldingen() {
-        List<Melding> meldingen = new ArrayList<>();
+     public List<Comment> getAllComments() {
+        List<Comment> comments = new ArrayList<>();
         
         try (Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
-            PreparedStatement stat = conn.prepareStatement("SELECT * FROM Melding");
+            PreparedStatement stat = conn.prepareStatement("SELECT * FROM Comment");
             try (ResultSet rs = stat.executeQuery()) {
                 while (rs.next()) {
-                    int nummer = rs.getInt("ID");
-                    String t = rs.getString("Type");
-                    String b = rs.getString("Beschrijving");
+                    int i = rs.getInt("ID");
+                    String in = rs.getString("Inhoud");
+                    int a = rs.getInt("Auteur");
                     
                     
-                    meldingen.add(new Melding(nummer, t, b));
+                    comments.add(new Comment(i, in, a));
                 }
             }
         } catch (SQLException ex) {
@@ -111,15 +111,15 @@ public class CommentDAO {
             }
         }
         
-        return meldingen;
+        return comments;
      }
      
-     public boolean updateMelding(Melding m) {
+     public boolean updateComment(Comment c) {
         try (Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
-            PreparedStatement stat = conn.prepareStatement("UPDATE Melding SET Type = ?, Beschrijving = ? WHERE ID = ?");
-            stat.setString(1, m.getType());
-            stat.setString(2, m.getBeschrijving());
-            stat.setInt(3, m.getId());
+            PreparedStatement stat = conn.prepareStatement("UPDATE Comment SET Inhoud = ?, Auteur = ? WHERE ID = ?");
+            stat.setString(1, c.getInhoud());
+            stat.setInt(2, c.getAuteur().getId());
+            stat.setInt(3, c.getId());
             stat.executeUpdate();
             return true;
         } catch (SQLException ex) {
@@ -130,21 +130,21 @@ public class CommentDAO {
         }
      }
      
-    public boolean updateMeldingen(Melding... meldingen) {
+    public boolean updateComments(Comment... comments) {
         boolean success = true;
-        for (Melding m : meldingen) {
-            success = success && updateMelding(m);
+        for (Comment m : comments) {
+            success = success && updateComment(m);
         }
         return success;
     }
     
-    public boolean deleteMelding(Melding m){
-        return deleteMelding(m.getId());
+    public boolean deleteComment(Comment c){
+        return deleteComment(c.getId());
     }
     
-    public boolean deleteMelding(int id){
+    public boolean deleteComment(int id){
         try (Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
-            PreparedStatement stat = conn.prepareStatement("DELETE FROM Melding WHERE ID = ?");
+            PreparedStatement stat = conn.prepareStatement("DELETE FROM Comment WHERE ID = ?");
             stat.setInt(1, id);
             stat.executeUpdate();
             return true;
@@ -156,18 +156,18 @@ public class CommentDAO {
         }
     }
     
-    public boolean deleteMeldingen(Melding... meldingen) {
+    public boolean deleteComments(Comment... comments) {
         boolean success = true;
-        for (Melding m : meldingen) {
-            success = success && deleteMelding(m);
+        for (Comment m : comments) {
+            success = success && deleteComment(m);
         }
         return success;
     }
     
-    public boolean deleteMeldingen(int... ids) {
+    public boolean deleteComments(int... ids) {
         boolean success = true;
         for (int id : ids) {
-            success = success && deleteMelding(id);
+            success = success && deleteComment(id);
         }
         return success;
     }

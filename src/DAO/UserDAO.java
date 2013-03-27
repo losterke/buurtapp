@@ -4,7 +4,10 @@
  */
 package DAO;
 
-import Domein.Melding;
+import Domein.User;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -12,6 +15,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -28,12 +33,17 @@ public class UserDAO {
         return instance;
     }
         
-    public boolean addMelding(Melding m){
-        try (Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
-            PreparedStatement stat = conn.prepareStatement("INSERT INTO Melding VALUES (?,?,?)");
-            stat.setInt(1, m.getId());
-            stat.setString(2, m.getType());
-            stat.setString(3, m.getBeschrijving());
+    public boolean addUser(User u){
+        try (
+                            
+            Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
+            PreparedStatement stat = conn.prepareStatement("INSERT INTO User VALUES (?,?,?,?,?,?)");
+            stat.setInt(1, u.getId());
+            stat.setString(2, u.getNaam());
+            stat.setString(3, u.getVoornaam());
+            stat.setString(4, u.getAdres());
+            stat.setBytes(5, u.getFoto());
+            stat.setInt(6, u.getPunten());
             stat.executeUpdate();
             return true;
         }catch (SQLException ex){
@@ -41,31 +51,36 @@ public class UserDAO {
                 t.printStackTrace();
             }
             return false;
-        }
+        } 
+        
         
     }
     
-    public boolean addMeldingen(Melding... meldingen) {
+    public boolean addUsers(User... users) {
         boolean success = true;
-        for (Melding m : meldingen) {
-            success = success && addMelding(m);
+        for (User u : users) {
+            success = success && addUser(u);
         }
         return success;
     }
     
-    public Melding getMelding(int id){
-        Melding m = null;
+    public User getUser(int id){
+        User u = null;
         
         try (Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
-            PreparedStatement stat = conn.prepareStatement("SELECT FROM Melding WHERE ID = ?");
+            PreparedStatement stat = conn.prepareStatement("SELECT FROM User WHERE ID = ?");
             stat.setInt(1, id);
             try (ResultSet rs = stat.executeQuery()) {
                 if (rs.next()) {
                     int i = rs.getInt("ID");
-                    String t = rs.getString("Type");
-                    String b = rs.getString("Beschrijving");
+                    String n = rs.getString("Naam");
+                    String vn = rs.getString("Voornaam");
+                    String a = rs.getString("Adres");
+                    byte[] f = rs.getBytes("Foto");
+                    int ptn = rs.getInt("Punten");
+            
                                         
-                    m =  new Melding(i,t,b);
+                    u =  new User(i,n,vn,a,f,ptn);
                 }
             }
             
@@ -74,35 +89,38 @@ public class UserDAO {
                 t.printStackTrace();
             } 
         }
-        return m;
+        return u;
     }
     
-    public List<Melding> getMeldingen(int... ids) {
-        List<Melding> meldingen = new ArrayList<>();
+    public List<User> getUsers(int... ids) {
+        List<User> users = new ArrayList<>();
         
         for (int id : ids) {
-            Melding m = getMelding(id);
-            if (m != null) {
-                meldingen.add(m);
+            User u = getUser(id);
+            if (u != null) {
+                users.add(u);
             }
         }
         
-        return meldingen;
+        return users;
     }
     
-     public List<Melding> getAllMeldingen() {
-        List<Melding> meldingen = new ArrayList<>();
+     public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
         
         try (Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
-            PreparedStatement stat = conn.prepareStatement("SELECT * FROM Melding");
+            PreparedStatement stat = conn.prepareStatement("SELECT * FROM User");
             try (ResultSet rs = stat.executeQuery()) {
                 while (rs.next()) {
-                    int nummer = rs.getInt("ID");
-                    String t = rs.getString("Type");
-                    String b = rs.getString("Beschrijving");
+                    int i = rs.getInt("ID");
+                    String n = rs.getString("Naam");
+                    String vn = rs.getString("Voornaam");
+                    String a = rs.getString("Adres");
+                    byte[] f = rs.getBytes("Foto");
+                    int ptn = rs.getInt("Punten");
                     
                     
-                    meldingen.add(new Melding(nummer, t, b));
+                    users.add(new User(i,n,vn,a,f,ptn));
                 }
             }
         } catch (SQLException ex) {
@@ -111,15 +129,18 @@ public class UserDAO {
             }
         }
         
-        return meldingen;
+        return users;
      }
      
-     public boolean updateMelding(Melding m) {
+     public boolean updateUser(User u) {
         try (Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
-            PreparedStatement stat = conn.prepareStatement("UPDATE Melding SET Type = ?, Beschrijving = ? WHERE ID = ?");
-            stat.setString(1, m.getType());
-            stat.setString(2, m.getBeschrijving());
-            stat.setInt(3, m.getId());
+            PreparedStatement stat = conn.prepareStatement("UPDATE User SET Naam = ?, Voornaam = ?, Adres = ?, Foto = ?, Punten = ? WHERE ID = ?");
+            stat.setInt(1, u.getId());
+            stat.setString(2, u.getNaam());
+            stat.setString(3, u.getVoornaam());
+            stat.setString(4, u.getAdres());
+            stat.setBytes(5, u.getFoto());
+            stat.setInt(6, u.getPunten());
             stat.executeUpdate();
             return true;
         } catch (SQLException ex) {
@@ -130,21 +151,21 @@ public class UserDAO {
         }
      }
      
-    public boolean updateMeldingen(Melding... meldingen) {
+    public boolean updateUsers(User... users) {
         boolean success = true;
-        for (Melding m : meldingen) {
-            success = success && updateMelding(m);
+        for (User u : users) {
+            success = success && updateUser(u);
         }
         return success;
     }
     
-    public boolean deleteMelding(Melding m){
-        return deleteMelding(m.getId());
+    public boolean deleteUser(User u){
+        return deleteUser(u.getId());
     }
     
-    public boolean deleteMelding(int id){
+    public boolean deleteUser(int id){
         try (Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
-            PreparedStatement stat = conn.prepareStatement("DELETE FROM Melding WHERE ID = ?");
+            PreparedStatement stat = conn.prepareStatement("DELETE FROM User WHERE ID = ?");
             stat.setInt(1, id);
             stat.executeUpdate();
             return true;
@@ -156,18 +177,18 @@ public class UserDAO {
         }
     }
     
-    public boolean deleteMeldingen(Melding... meldingen) {
+    public boolean deleteUsers(User... users) {
         boolean success = true;
-        for (Melding m : meldingen) {
-            success = success && deleteMelding(m);
+        for (User u : users) {
+            success = success && deleteUser(u);
         }
         return success;
     }
     
-    public boolean deleteMeldingen(int... ids) {
+    public boolean deleteUsers(int... ids) {
         boolean success = true;
         for (int id : ids) {
-            success = success && deleteMelding(id);
+            success = success && deleteUser(id);
         }
         return success;
     }

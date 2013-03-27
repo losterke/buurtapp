@@ -4,7 +4,11 @@
  */
 package Domein;
 
+import DAO.CommentDAO;
+import DAO.FotoDAO;
+import DAO.UserDAO;
 import java.sql.Date;
+import java.util.List;
 
 /**
  *
@@ -19,8 +23,23 @@ public class Event {
     private Date end;
     private User auteur;
     private Foto foto;
-    private User[] deelnemers;
+    private List<User> deelnemers;
     private Comment Comment;
+    private UserDAO udao = UserDAO.getInstance();
+    private FotoDAO fdao = FotoDAO.getInstance();
+    private CommentDAO cdao = CommentDAO.getInstance();
+
+    public Event(int i, String n, String l, Date s, Date ei, int a, int f, int d, int c) {
+        setId(i);
+        setNaam(n);
+        setLocatie(l);
+        setStart(s);
+        setEnd(ei);
+        setAuteur(udao.getUser(a));
+        setFoto(fdao.getFoto(f));
+        setDeelnemers(udao.getUsers(d));
+        setComment(cdao.getComment(c));
+    }
 
     public int getId() {
         return id;
@@ -78,11 +97,11 @@ public class Event {
         this.foto = foto;
     }
 
-    public User[] getDeelnemers() {
+    public List<User> getDeelnemers() {
         return deelnemers;
     }
 
-    public void setDeelnemers(User[] deelnemers) {
+    public void setDeelnemers(List<User> deelnemers) {
         this.deelnemers = deelnemers;
     }
 

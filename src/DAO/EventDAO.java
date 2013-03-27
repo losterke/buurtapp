@@ -4,8 +4,9 @@
  */
 package DAO;
 
-import Domein.Melding;
+import Domein.Event;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,12 +29,18 @@ public class EventDAO {
         return instance;
     }
         
-    public boolean addMelding(Melding m){
+    public boolean addEvent(Event e){
         try (Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
-            PreparedStatement stat = conn.prepareStatement("INSERT INTO Melding VALUES (?,?,?)");
-            stat.setInt(1, m.getId());
-            stat.setString(2, m.getType());
-            stat.setString(3, m.getBeschrijving());
+            PreparedStatement stat = conn.prepareStatement("INSERT INTO Event VALUES (?,?,?,?,?,?,?,?,?)");
+            stat.setInt(1, e.getId());
+            stat.setString(2, e.getNaam());
+            stat.setString(3, e.getLocatie());
+            stat.setDate(4, e.getStart());
+            stat.setDate(5, e.getEnd());
+            stat.setInt(6, e.getAuteur().getId());
+            stat.setInt(7, e.getFoto().getId());
+            stat.setInt(8, e.getDeelnemers().size());
+            stat.setInt(9, e.getComment().getId());
             stat.executeUpdate();
             return true;
         }catch (SQLException ex){
@@ -45,27 +52,33 @@ public class EventDAO {
         
     }
     
-    public boolean addMeldingen(Melding... meldingen) {
+    public boolean addEvents(Event... events) {
         boolean success = true;
-        for (Melding m : meldingen) {
-            success = success && addMelding(m);
+        for (Event e : events) {
+            success = success && addEvent(e);
         }
         return success;
     }
     
-    public Melding getMelding(int id){
-        Melding m = null;
+    public Event getEvent(int id){
+        Event e = null;
         
         try (Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
-            PreparedStatement stat = conn.prepareStatement("SELECT FROM Melding WHERE ID = ?");
+            PreparedStatement stat = conn.prepareStatement("SELECT FROM Event WHERE ID = ?");
             stat.setInt(1, id);
             try (ResultSet rs = stat.executeQuery()) {
                 if (rs.next()) {
                     int i = rs.getInt("ID");
-                    String t = rs.getString("Type");
-                    String b = rs.getString("Beschrijving");
-                                        
-                    m =  new Melding(i,t,b);
+                    String n = rs.getString("Naam");
+                    String l = rs.getString("Locatie");
+                    Date s = rs.getDate("Start");
+                    Date ei = rs.getDate("Einde");
+                    int a = rs.getInt("Auteur");
+                    int f = rs.getInt("Foto");
+                    int d = rs.getInt("Deelnemers");
+                    int c = rs.getInt("Comment");
+                    
+                    e =  new Event(i,n,l,s,ei,a,f,d,c);
                 }
             }
             
@@ -74,35 +87,41 @@ public class EventDAO {
                 t.printStackTrace();
             } 
         }
-        return m;
+        return e;
     }
     
-    public List<Melding> getMeldingen(int... ids) {
-        List<Melding> meldingen = new ArrayList<>();
+    public List<Event> getEvents(int... ids) {
+        List<Event> events = new ArrayList<>();
         
         for (int id : ids) {
-            Melding m = getMelding(id);
-            if (m != null) {
-                meldingen.add(m);
+            Event e = getEvent(id);
+            if (e != null) {
+                events.add(e);
             }
         }
         
-        return meldingen;
+        return events;
     }
     
-     public List<Melding> getAllMeldingen() {
-        List<Melding> meldingen = new ArrayList<>();
+     public List<Event> getAllEvents() {
+        List<Event> events = new ArrayList<>();
         
         try (Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
-            PreparedStatement stat = conn.prepareStatement("SELECT * FROM Melding");
+            PreparedStatement stat = conn.prepareStatement("SELECT * FROM Event");
             try (ResultSet rs = stat.executeQuery()) {
                 while (rs.next()) {
-                    int nummer = rs.getInt("ID");
-                    String t = rs.getString("Type");
-                    String b = rs.getString("Beschrijving");
+                    int i = rs.getInt("ID");
+                    String n = rs.getString("Naam");
+                    String l = rs.getString("Locatie");
+                    Date s = rs.getDate("Start");
+                    Date ei = rs.getDate("Einde");
+                    int a = rs.getInt("Auteur");
+                    int f = rs.getInt("Foto");
+                    int d = rs.getInt("Deelnemers");
+                    int c = rs.getInt("Comment");
                     
                     
-                    meldingen.add(new Melding(nummer, t, b));
+                    events.add(new Event(i,n,l,s,ei,a,f,d,c));
                 }
             }
         } catch (SQLException ex) {
@@ -111,15 +130,21 @@ public class EventDAO {
             }
         }
         
-        return meldingen;
+        return events;
      }
      
-     public boolean updateMelding(Melding m) {
+     public boolean updateEvent(Event e) {
         try (Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
-            PreparedStatement stat = conn.prepareStatement("UPDATE Melding SET Type = ?, Beschrijving = ? WHERE ID = ?");
-            stat.setString(1, m.getType());
-            stat.setString(2, m.getBeschrijving());
-            stat.setInt(3, m.getId());
+            PreparedStatement stat = conn.prepareStatement("UPDATE Event SET Naam = ?, Locatie = ?, Start = ?, Einde = ?, Auteur = ?, Foto = ?, Deelnemers = ?, Comment = ? WHERE ID = ?");
+            stat.setInt(1, e.getId());
+            stat.setString(2, e.getNaam());
+            stat.setString(3, e.getLocatie());
+            stat.setDate(4, e.getStart());
+            stat.setDate(5, e.getEnd());
+            stat.setInt(6, e.getAuteur().getId());
+            stat.setInt(7, e.getFoto().getId());
+            stat.setInt(8, e.getDeelnemers().size());
+            stat.setInt(9, e.getComment().getId());
             stat.executeUpdate();
             return true;
         } catch (SQLException ex) {
@@ -130,21 +155,21 @@ public class EventDAO {
         }
      }
      
-    public boolean updateMeldingen(Melding... meldingen) {
+    public boolean updateEvents(Event... events) {
         boolean success = true;
-        for (Melding m : meldingen) {
-            success = success && updateMelding(m);
+        for (Event e : events) {
+            success = success && updateEvent(e);
         }
         return success;
     }
     
-    public boolean deleteMelding(Melding m){
-        return deleteMelding(m.getId());
+    public boolean deleteEvent(Event e){
+        return deleteEvent(e.getId());
     }
     
-    public boolean deleteMelding(int id){
+    public boolean deleteEvent(int id){
         try (Connection conn = DriverManager.getConnection(JDBC_URL_MYSQL)) {
-            PreparedStatement stat = conn.prepareStatement("DELETE FROM Melding WHERE ID = ?");
+            PreparedStatement stat = conn.prepareStatement("DELETE FROM Event WHERE ID = ?");
             stat.setInt(1, id);
             stat.executeUpdate();
             return true;
@@ -156,18 +181,18 @@ public class EventDAO {
         }
     }
     
-    public boolean deleteMeldingen(Melding... meldingen) {
+    public boolean deleteEvents(Event... events) {
         boolean success = true;
-        for (Melding m : meldingen) {
-            success = success && deleteMelding(m);
+        for (Event e : events) {
+            success = success && deleteEvent(e);
         }
         return success;
     }
     
-    public boolean deleteMeldingen(int... ids) {
+    public boolean deleteEvents(int... ids) {
         boolean success = true;
         for (int id : ids) {
-            success = success && deleteMelding(id);
+            success = success && deleteEvent(id);
         }
         return success;
     }

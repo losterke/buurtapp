@@ -4,6 +4,7 @@
  */
 package Domein;
 
+import DAO.UserDAO;
 import java.io.File;
 
 /**
@@ -15,9 +16,12 @@ public class Foto {
     private int id;
     private File foto;
     private User auteur;
+    private UserDAO udao = UserDAO.getInstance();
 
     public Foto(int i, File file, int a) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        setId(i);
+        setFoto(file);
+        setAuteur(udao.getUser(a));
     }
 
     public int getId() {
